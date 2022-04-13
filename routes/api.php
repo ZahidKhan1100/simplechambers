@@ -24,6 +24,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('register',[UserController::class , 'register'])->name('register');
 Route::post('login',[UserController::class , 'login'])->name('login');
 Route::post('forgotpassword',[UserController::class , 'forgotpassword'])->name('forgotpassword');
+Route::post('updatepassword',[UserController::class , 'updatePassword'])->name('updatepassword');
+Route::post('resetpassword',[UserController::class , 'resetPassword'])->name('resetpassword');
+
+Route::post('update',[UserController::class , 'profileUpdate'])->name('update');
 
 // Chamber Routes
 

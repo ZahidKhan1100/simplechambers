@@ -18,23 +18,31 @@ class UserController extends Controller
     // Registration
 
     public function register(Request $request){
-        $apiToken = Str::random(60);
 
-        $user = User::create([
-            'name'=>$request->name,
-            'email'=>$request->email,
-            'phone'=>$request->phone,
-            'token'=>$apiToken,
-            'password'=>Hash::make($request->password),
+        $validate=$request->validate([
+            'email' => ['unique:users'],
         ]);
 
-        if($user){
-            $message = "User Registered Successfully";
-            return $this->responseSuccess($user,$message);
+        if($validate){
+            $apiToken = Str::random(60);
+            $user = User::create([
+                'name'=>$request->name,
+                'email'=>$request->email,
+                'phone'=>$request->phone,
+                'token'=>$apiToken,
+                'type'=>$request->type,
+                'password'=>Hash::make($request->password),
+            ]);
+                $message = "User Registered Successfully";
+                return $this->responseSuccess($user,$message);
+            
+        }else{
+            $message = "Email already exist";
+            return $this->responseFail($validate);
         }
-        else{
-            return $this->responseFail();
-        }
+        
+
+        
     }
 
     // Login
@@ -55,11 +63,13 @@ class UserController extends Controller
                 
             }
             else{
-                return $this->responseFail();
+                $message = "Invalid Password";
+                return $this->responseFail($message);
             }
         }
         else{
-            return $this->responseFail();
+            $message = "Invalid Email";
+            return $this->responseFail($message);
         }
     }
 
@@ -69,31 +79,83 @@ class UserController extends Controller
         $userExist = User::where('email',$request->email)->first();
 
         if($userExist){
+            $randomNumber = random_int(100000, 999999);
+
+            DB::table('password_resets')->insert([
+                'email' => $request->email,
+                'otpcode' => $randomNumber,
+                'created_at' => Carbon::now()
+            ]);
+
             $message = "Email Exist";
-            return $this->responseSuccess($userExist,$message);
+            return $this->responseSuccess($randomNumber,$message);
         }
-        // $token = Str::random(64);
-        // DB::table('password_resets')->insert([
-        //     'email' => $request->email,
-        //     'token' => $token,
-        //     'created_at' => Carbon::now()
-        // ]);
+        else{
+            $message = "Invalid Email";
+            return $this->responseFail($message);
+        }
 
 
+    }
 
-    
+    // UpdatePassword
 
+    public function updatePassword(Request $request){
+        $email = DB::table('password_resets')->select('email')->where('otpcode', '=', $request->otpcode)->get();
+        // ->toArray();
+        if(count($email)){
+            $user = User::where('email','=',$email[0]->email)->first();
+            $message = "Email Exist";
+            return $this->responseSuccess($user,$message);
+        }else{
+            $message = "Invalid OTP Code";
+            return $this->responseFail($message);
+        }
+    }
+
+
+    public function resetPassword(Request $request){
+        
+    }
+
+    // Update Profile
+    public function profileUpdate(Request $request){
+        $user = User::find($request->id);
+
+        if($user){
+            if(password_verify($request->oldpassword,$user->password)){
+                $user->name = $request->name;
+                $user->email = $request->email;
+                $user->phone = $request->phone;
+                $user->password = Hash::make($request->newpassword);
+                $user->save();
+
+                $message = "Profile Updated Successfully";
+                return $this->responseSuccess($user,$message);
+            }
+            else{
+                $user->name = $request->name;
+                $user->email = $request->email;
+                $user->phone = $request->phone;
+                $user->save();
+                $message = "Profile Updated Successfully";
+                return $this->responseSuccess($user,$message);
+            }
+        } else{
+            $message = "User id not found";
+            return $this->responseFail($message);
+        }
     }
 
 
 
 // Response Fail Function
-    public function responseFail(){
+    public function responseFail($message){
         return response()->json([
             'status'=>false,
-            'message'=>'Invalid Request',
+            'message'=>$message,
             
-        ],422);
+        ],200);
     }
 
 
