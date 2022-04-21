@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ChamberController;
+use App\Http\Controllers\NewsController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -33,3 +35,9 @@ Route::post('update',[UserController::class , 'profileUpdate'])->name('update');
 
 Route::post('createChamber',[ChamberController::class , 'create'])->name('createChamber');
 Route::post('showChamber',[ChamberController::class , 'show'])->name('showChamber');
+
+
+// News Routes
+
+Route::post('showNews',[NewsController::class , 'show'])->name('showNews');
+

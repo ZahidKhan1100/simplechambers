@@ -11,19 +11,23 @@ use DB;
 use Mail;
 use Str;
 use Hash;
-
+use Validator;
 
 class UserController extends Controller
 {
     // Registration
 
     public function register(Request $request){
-
-        $validate=$request->validate([
-            'email' => ['unique:users'],
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|unique:users,email',
         ]);
 
-        if($validate){
+        if ($validator->fails()) {
+            $message = "Email already exist";
+            return $this->responseFail($message);
+        }
+
+        else{
             $apiToken = Str::random(60);
             $user = User::create([
                 'name'=>$request->name,
@@ -36,9 +40,6 @@ class UserController extends Controller
                 $message = "User Registered Successfully";
                 return $this->responseSuccess($user,$message);
             
-        }else{
-            $message = "Email already exist";
-            return $this->responseFail($validate);
         }
         
 
@@ -114,8 +115,21 @@ class UserController extends Controller
     }
 
 
+    // reset password
     public function resetPassword(Request $request){
-        
+        $user = User::find($request->id);
+
+        if($user){
+            $user->password = Hash::make($request->password);
+            $user->save();
+
+            $message = "Password Updated Successfully";
+            return $this->responseSuccess($user,$message);
+
+        }else{
+            $message = "Invalid Request";
+            return $this->responseFail($message);
+        }
     }
 
     // Update Profile
