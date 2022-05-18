@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Business;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use App\Models\News;
 use Str;
 
-
-class NewsController extends Controller
+class BusinessController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -47,23 +46,24 @@ class NewsController extends Controller
         $image = str_replace(' ', '+', $image);
         $imageName = time().'_'.Str::random(20).'.'.$extension;
 
-        // $name = $request->file('image')->getClientOriginalName();
-        // $path = $request->file('image')->storeAs('public/images/',$name);
-
         Storage::disk('local')->put($imageName, base64_decode($image));
 
-        $news = News::create([
-            'chamber_id'=>$request->user_id,
-            'title'=>$request->title,
+
+        //
+        $user_id = 1;
+        $business = Business::create([
+            'user_id'=>$user_id,
+            'business_title'=>$request->title,
+            'zip'=>$request->zip,
+            'state'=>$request->state,
+            'phone'=>$request->phone,
+            'email'=>$request->email,
             'image'=>$imageName,
-            'description'=>$request->description,
 
         ]);
 
-       
-
-        if($news){
-            return $this->responseSuccess($news);
+        if($business){
+            return $this->responseSuccess($business);
         }
         else{
             $message = "invalid request";
@@ -74,37 +74,23 @@ class NewsController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  \App\Models\Business  $business
      * @return \Illuminate\Http\Response
      */
-    public function show(Request $request)
+    public function show(Request $request, Business $business)
     {
         //
-        // $data = News::where('chamber_id', '=', $request->chamber_id)->get();
-        $data = News::all();
-
-        if ($data) {
-            # code...
-            return $this->responseSuccess($data);
+        $business = Business::Where('business_title', 'LIKE', '%'.$request->title.'%')
+        ->orWhere('state', 'LIKE', '%'.$request->state.'%')
+        ->orWhere('zip', 'LIKE', '%'.$request->zip.'%')
+        ->orWhere('phone', 'LIKE', '%'.$request->phone.'%')
+        ->orWhere('email', 'LIKE', '%'.$request->email.'%')
+        ->get();
+        if($business){
+            return $this->responseSuccess($business);
         }
         else{
-            $message = "Something went wrong with query";
-            return $this->responseFail($message);
-        }
-    }
-
-    public function latestNews(Request $request)
-    {
-        //
-        // $data = News::where('chamber_id', '=', $request->chamber_id)->get();
-        $data = News::latest()->first();
-
-        if ($data) {
-            # code...
-            return $this->responseSuccess($data);
-        }
-        else{
-            $message = "Something went wrong with query";
+            $message = "invalid request";
             return $this->responseFail($message);
         }
     }
@@ -112,10 +98,10 @@ class NewsController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param  \App\Models\Business  $business
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Business $business)
     {
         //
     }
@@ -124,10 +110,10 @@ class NewsController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  \App\Models\Business  $business
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Business $business)
     {
         //
     }
@@ -135,15 +121,14 @@ class NewsController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  \App\Models\Business  $business
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Business $business)
     {
         //
     }
 
-    // Response Fail
 
     public function responseFail($message){
         return response()->json([
@@ -152,14 +137,10 @@ class NewsController extends Controller
         ],422);
     }
 
-    // Response Success
-
     public function responseSuccess($data){
         return response()->json([
             "status" => true,
             "data" => $data
         ],200);
     }
-
-
 }

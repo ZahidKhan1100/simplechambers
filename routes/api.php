@@ -5,6 +5,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ChamberController;
 use App\Http\Controllers\NewsController;
+use App\Http\Controllers\BusinessController;
+use App\Http\Controllers\CommunityController;
+use App\Http\Controllers\EventController;
+
 
 
 /*
@@ -38,6 +42,19 @@ Route::post('showChamber',[ChamberController::class , 'show'])->name('showChambe
 
 
 // News Routes
+Route::post('addNews',[NewsController::class , 'store'])->name('addNews');
+Route::get('showNews',[NewsController::class , 'show'])->name('showNews');
+Route::get('latestNews',[NewsController::class , 'latestNews'])->name('latestNews');
 
-Route::post('showNews',[NewsController::class , 'show'])->name('showNews');
 
+// Business Routes
+Route::post('addBusiness',[BusinessController::class , 'store'])->name('addBusiness');
+Route::post('showBusiness',[BusinessController::class , 'show'])->name('showBusiness');
+
+// Community Routes
+Route::post('addMessage',[CommunityController::class , 'addMessage'])->name('addMessage');
+Route::get('showMessages',[CommunityController::class , 'showMessages'])->name('showMessages');
+
+
+// Events
+Route::get('showEvents',[EventController::class , 'showEvents'])->name('showEvents');

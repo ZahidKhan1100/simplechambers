@@ -5,15 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class News extends Model
+class Community extends Model
 {
     use HasFactory;
-
     protected $fillable = [
-        'chamber_id',
-        'title',
-        'description',
-        'image',
+        'user_id',
+        'message',
+        'date',
+        'time',
     
     ];
+
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
 }
